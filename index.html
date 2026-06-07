@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dialpa Fibra</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#0f2d6b;--blue2:#1a4aad;--accent:#00c6a2;--accent2:#00e6bc;--red:#e63946;--bg:#f0f4fb;--card:#ffffff;--text:#1a2340;--muted:#6b7a9e;--border:#d8e2f0;--shadow:0 4px 20px rgba(15,45,107,0.10);--green:#065f46;--green2:#047857;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);min-height:100vh;}
+.app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);}
+.header{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);padding:16px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 3px 15px rgba(15,45,107,0.25);position:sticky;top:0;z-index:100;}
+.header-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;color:white;flex-shrink:0;}
+.header-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:white;letter-spacing:1px;line-height:1.1;}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.65);font-weight:600;}
+.header-user{margin-left:auto;background:rgba(255,255,255,0.12);border-radius:20px;padding:6px 12px;font-size:12px;color:white;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,0.2);display:none;white-space:nowrap;}
+.offline-banner{background:#dc2626;color:white;text-align:center;padding:8px;font-size:12px;font-weight:700;display:none;}
+.offline-banner.show{display:block;}
+.screen{display:none;flex:1;padding:20px 16px 100px;overflow-y:auto;}
+.screen.active{display:block;}
+.login-hero{text-align:center;padding:30px 0 25px;}
+.login-icon{width:80px;height:80px;background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:24px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 8px 25px rgba(15,45,107,0.3);}
+.login-title{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:var(--blue);}
+.login-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.card{background:var(--card);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px;}
+.card-title{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+.field{margin-bottom:14px;}
+.field label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:7px;}
+.field input,.field select{width:100%;padding:13px 14px;border:2px solid var(--border);border-radius:12px;font-size:14px;font-family:'Nunito',sans-serif;color:var(--text);background:#fff;outline:none;transition:all 0.2s;}
+.field input:focus,.field select:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(26,74,173,0.1);}
+.cats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:14px;}
+.cat-btn{padding:10px 4px;border:2px solid var(--border);border-radius:12px;background:#f8faff;font-size:9.5px;font-weight:800;color:var(--muted);cursor:pointer;text-align:center;line-height:1.4;transition:all 0.2s;font-family:'Nunito',sans-serif;}
+.cat-btn.active{border-color:var(--blue2);background:#e8f0fd;color:var(--blue2);}
+.cat-icon{font-size:16px;display:block;margin-bottom:3px;}
+.search-wrap{position:relative;margin-bottom:10px;}
+.search-wrap input{padding-left:40px;}
+.search-wrap::before{content:"🔍";position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;z-index:1;}
+.act-list{border:2px solid var(--border);border-radius:12px;max-height:210px;overflow-y:auto;background:#fff;}
+.act-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #f0f4fb;cursor:pointer;font-size:12.5px;color:var(--text);transition:background 0.15s;}
+.act-item:last-child{border-bottom:none;}
+.act-item:hover,.act-item.sel{background:#e8f0fd;color:var(--blue2);}
+.act-item input[type=radio]{accent-color:var(--blue2);width:16px;height:16px;flex-shrink:0;}
+.act-prices{margin-left:auto;text-align:right;flex-shrink:0;}
+.act-prices .p-main{font-weight:800;font-size:12px;color:var(--accent);}
+.act-prices .p-hint{font-size:9px;color:var(--muted);}
+.price-info{background:#f0f4fb;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--muted);display:none;}
+.price-info.show{display:block;}
+.price-info b{color:var(--blue2);}
+.btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;box-shadow:0 4px 15px rgba(15,45,107,0.3);}
+.btn-primary:active{transform:scale(0.98);}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.btn-success{background:linear-gradient(135deg,#00a882,var(--accent));color:white;box-shadow:0 4px 15px rgba(0,198,162,0.3);}
+.btn-danger{background:#fff0f0;color:var(--red);border:2px solid #ffd0d0;}
+.btn-gray{background:#f0f4fb;color:var(--muted);}
+.btn-sheets{background:linear-gradient(135deg,#1e7e34,#28a745);color:white;box-shadow:0 4px 15px rgba(40,167,69,0.3);}
+.btn-locked{background:#e2e8f0;color:#94a3b8;border:2px solid #cbd5e1;cursor:not-allowed;font-size:13px;}
+.alert{padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;display:none;}
+.alert-error{background:#fff0f0;color:#c0392b;border-left:4px solid var(--red);}
+.alert-success{background:#e6fdf8;color:#007a60;border-left:4px solid var(--accent);}
+.summary-card{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);border-radius:18px;padding:20px;color:white;margin-bottom:14px;box-shadow:0 6px 25px rgba(15,45,107,0.25);}
+.sc-label{font-size:11px;opacity:0.7;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;}
+.sc-value{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;line-height:1;margin:4px 0 2px;}
+.sc-sub{font-size:12px;opacity:0.8;}
+.sc-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.12);font-size:13px;}
+.sc-row:last-child{border-bottom:none;}
+.sc-row .val{font-weight:800;font-size:14px;}
+.sc-total{border-top:2px dashed rgba(255,255,255,0.3)!important;margin-top:6px;padding-top:12px!important;}
+.sc-total .val{color:var(--accent2);font-size:17px!important;}
+.acum-card{background:linear-gradient(135deg,var(--green),var(--green2));border-radius:14px;padding:16px;color:white;margin-bottom:14px;box-shadow:0 4px 15px rgba(4,120,87,0.3);}
+.acum-label{font-size:11px;opacity:0.7;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;}
+.acum-value{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:#6ee7b7;line-height:1;margin-top:4px;}
+.acum-sub{font-size:11px;opacity:0.65;margin-top:6px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-pill{background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center;}
+.sp-num{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--blue2);line-height:1;}
+.sp-label{font-size:10px;color:var(--muted);font-weight:700;margin-top:3px;}
+.dias-card{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.dias-num{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;color:var(--blue2);line-height:1;}
+.dias-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;}
+.dias-dots{display:flex;flex-wrap:wrap;gap:4px;max-width:160px;justify-content:flex-end;}
+.dia-dot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.dia-dot.trabajado{background:var(--blue2);}
+.historial-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+.historial-item:last-child{border-bottom:none;}
+.hist-label{font-size:13px;font-weight:700;color:var(--text);}
+.hist-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.hist-val{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--green2);}
+.orders-table{width:100%;border-collapse:collapse;font-size:12px;}
+.orders-table th{background:#f0f4fb;color:var(--muted);font-weight:800;padding:9px 8px;text-align:left;font-size:11px;text-transform:uppercase;}
+.orders-table td{padding:10px 8px;border-bottom:1px solid #f0f4fb;color:var(--text);}
+.orders-table tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;}
+.badge-green{background:#e6fdf8;color:#007a60;}
+.badge-gray{background:#f0f4fb;color:var(--muted);}
+.reporte-box{background:#1a2340;color:#00e6bc;font-family:'Courier New',monospace;font-size:10.5px;padding:16px;border-radius:12px;white-space:pre;overflow-x:auto;margin-top:10px;line-height:1.85;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:white;border-radius:20px;padding:28px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;}
+.modal-icon{font-size:48px;text-align:center;margin-bottom:16px;}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:8px;}
+.modal-desc{font-size:14px;color:var(--muted);text-align:center;margin-bottom:22px;line-height:1.6;}
+.modal-btns{display:flex;flex-direction:column;gap:10px;}
+.cal-header-dias{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+.cal-header-dias span{text-align:center;font-size:10px;font-weight:800;color:var(--muted);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px;}
+.cal-day{padding:8px 4px;text-align:center;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent;background:#f8faff;transition:all 0.15s;}
+.cal-day.today{background:var(--blue2);color:white;border-color:var(--blue2);}
+.cal-day.has-work{background:#e6fdf8;color:#007a60;border-color:#a7f3d0;}
+.cal-day.selected{border-color:var(--blue2);background:#e8f0fd;color:var(--blue2);}
+.cal-day.disabled{color:#cbd5e1;cursor:default;background:#f8faff;}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:70px;background:white;border-top:1px solid var(--border);display:none;justify-content:space-around;align-items:center;z-index:200;box-shadow:0 -4px 20px rgba(15,45,107,0.08);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px;color:var(--muted);transition:color 0.2s;font-size:11px;font-weight:700;}
+.nav-item.active{color:var(--blue2);}
+.ni{font-size:22px;}
+.nav-dot{width:5px;height:5px;background:var(--blue2);border-radius:50%;margin-top:1px;display:none;}
+.nav-item.active .nav-dot{display:block;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="offline-banner" id="offlineBanner">⚠️ Sin conexión — los registros se guardan localmente</div>
+<div class="header">
+  <div class="header-logo">D</div>
+  <div><div class="header-title">DIALPA FIBRA</div><div class="header-sub">Sistema de Instalaciones v3</div></div>
+  <div class="header-user" id="headerUser" onclick="cerrarSesion()">👤 <span id="headerName"></span> ✕</div>
+</div>
+
+<!-- MODAL DÍA ANTERIOR -->
+<div class="modal-overlay" id="modalDiaAnterior">
+  <div class="modal-box">
+    <div class="modal-icon">📅</div>
+    <div class="modal-title">¿Trabajaste ayer?</div>
+    <div class="modal-desc" id="modalDiaDesc">No registraste actividades ayer.</div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="responderDiaAnterior(true)">✅ Sí, registrar actividades de ayer</button>
+      <button class="btn btn-gray" onclick="responderDiaAnterior(false)">❌ No trabajé ese día</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CALENDARIO -->
+<div class="modal-overlay" id="modalCalendario">
+  <div class="modal-box">
+    <div class="modal-title" style="margin-bottom:6px">📅 Selecciona la fecha</div>
+    <div class="modal-desc" style="margin-bottom:14px">¿Para qué día quieres registrar?</div>
+    <div class="cal-header-dias"><span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div style="margin-top:16px;display:flex;gap:10px;">
+      <button class="btn btn-primary" id="btnConfirmarFecha" onclick="confirmarFecha()" disabled style="margin-top:0">Confirmar</button>
+      <button class="btn btn-gray" onclick="document.getElementById('modalCalendario').classList.remove('show')" style="margin-top:0">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="screen active" id="screenLogin">
+  <div class="login-hero">
+    <div class="login-icon">📡</div>
+    <div class="login-title">Bienvenido</div>
+    <div class="login-sub">Ingresa tu cédula para continuar</div>
+  </div>
+  <div class="alert alert-error" id="loginError">❌ Cédula no registrada en el sistema.</div>
+  <div class="card">
+    <div class="field">
+      <label>Número de Cédula (CC)</label>
+      <input type="number" id="loginCC" placeholder="Ej: 80493258" onkeydown="if(event.key==='Enter') handleLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="handleLogin()">Ingresar al Sistema</button>
+  </div>
+  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--muted);">Dialpa Fibra v3.0</div>
+</div>
+
+<!-- REGISTRO -->
+<div class="screen" id="screenForm">
+  <div class="alert alert-error" id="errorMDM">❌ Este MDM ya fue registrado.</div>
+  <div class="alert alert-success" id="successMsg">✅ ¡Instalación registrada!</div>
+  <div class="alert alert-success" id="sheetsMsg">📊 ¡Enviado a Google Sheets!</div>
+  <div class="alert alert-error" id="sheetsErrMsg">⚠️ Sin conexión. Guardado localmente.</div>
+  <div class="card" style="padding:14px 18px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Fecha de Registro</div>
+        <div id="fechaRegistroLabel" style="font-size:15px;font-weight:700;color:var(--text);margin-top:4px;">📅 Hoy</div>
+      </div>
+      <button onclick="abrirCalendario()" style="background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--blue2);cursor:pointer;">Cambiar</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Nueva Instalación</div>
+    <div class="field">
+      <label>Código MDM Fibra</label>
+      <input type="text" id="mdmInput" placeholder="Ej: 350001049885" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label>Tipo de Orden</label>
+      <div class="cats">
+        <button class="cat-btn active" data-cat="single-duo" onclick="selCat('single-duo')"><span class="cat-icon">📶</span>SINGLE/<br>DUO</button>
+        <button class="cat-btn" data-cat="trio-1-2" onclick="selCat('trio-1-2')"><span class="cat-icon">📺</span>TRIO<br>1/2 STB</button>
+        <button class="cat-btn" data-cat="trio-3-4" onclick="selCat('trio-3-4')"><span class="cat-icon">🖥️</span>TRIO<br>3/4 STB</button>
+        <button class="cat-btn" data-cat="trio-5-6" onclick="selCat('trio-5-6')"><span class="cat-icon">📡</span>TRIO<br>5/6 STB</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Buscar Actividad</label>
+      <div class="search-wrap"><input type="text" id="buscarAct" onkeyup="filtrarActs()" placeholder="Escribe para filtrar..."></div>
+      <div class="act-list" id="listaActs"></div>
+    </div>
+    <div class="price-info" id="priceInfo"></div>
+    <button class="btn btn-primary" id="btnRegistrar" style="margin-top:4px" onclick="guardarOrden()">➕ Registrar Instalación</button>
+  </div>
+  <div class="dias-card">
+    <div>
+      <div class="dias-num" id="diasTrabajados">0</div>
+      <div class="dias-label">Días trabajados</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="diasPeriodo">este mes</div>
+    </div>
+    <div class="dias-dots" id="diasDots"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Órdenes del Periodo</div>
+    <table class="orders-table">
+      <thead><tr><th>Fecha</th><th>MDM</th><th>Actividad</th><th>Valor</th></tr></thead>
+      <tbody id="tablaOrdenes"></tbody>
+    </table>
+    <div id="emptyOrders" style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Sin órdenes registradas aún</div>
+  </div>
+</div>
+
+<!-- QUINCENA -->
+<div class="screen" id="screenSalary">
+  <div class="field" style="margin-bottom:14px;">
+    <label>Periodo de Cobro</label>
+    <select id="selectCorte" onchange="calcSalary();renderBtnSheets();">
+      <option value="1">1ra Quincena (Días 1 al 15)</option>
+      <option value="2" selected>2da Quincena (Días 16 al 31)</option>
+    </select>
+  </div>
+  <div class="acum-card">
+    <div class="acum-label">💰 Total Acumulado Ganado</div>
+    <div class="acum-value" id="lblAcumulado">$0 COP</div>
+    <div class="acum-sub" id="lblAcumuladoSub">Suma de todas las quincenas enviadas</div>
+  </div>
+  <div class="summary-card">
+    <div class="sc-label">Total a Cobrar Esta Quincena</div>
+    <div class="sc-value" id="lblNeto">$0 COP</div>
+    <div class="sc-sub" id="lblPeriodoDesc">Quincena actual</div>
+    <div style="margin-top:16px">
+      <div class="sc-row"><span>Órdenes en el periodo</span><span class="val" id="lblCantidad">0</span></div>
+      <div class="sc-row"><span>Días trabajados</span><span class="val" id="lblDiasQ">0</span></div>
+      <div class="sc-row"><span>Valor bruto</span><span class="val" id="lblBruto">$0</span></div>
+      <div class="sc-row" style="color:rgba(255,150,150,0.95)"><span>⚠️ Retención garantía (5%)</span><span class="val" id="lblRetencion">-$0</span></div>
+      <div class="sc-row sc-total"><span>✅ NETO A COBRAR</span><span class="val" id="lblNeto2">$0</span></div>
+    </div>
+  </div>
+  <div class="card" style="background:#fffbeb;border:2px solid #fde68a;margin-bottom:14px;">
+    <div style="font-size:12px;color:#92400e;font-weight:700;margin-bottom:6px;">ℹ️ Cómo se calculan los precios</div>
+    <div style="font-size:12px;color:#78350f;line-height:1.6">
+      • <b>1 a 2 órdenes</b> del mismo tipo en la quincena → precio 1<br>
+      • <b>3 órdenes</b> del mismo tipo en la quincena → precio 2<br>
+      • <b>4 o más</b> del mismo tipo en la quincena → precio 3<br>
+      El 5% se descuenta <b>una sola vez</b> al total bruto.
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-pill"><div class="sp-num" id="resSingle">0</div><div class="sp-label">Single/Duo</div></div>
+    <div class="stat-pill"><div class="sp-num" id="resTrio12">0</div><div class="sp-label">Trio 1/2 STB</div></div>
+    <div class="stat-pill"><div class="sp-num" id="resTrio34">0</div><div class="sp-label">Trio 3/4 STB</div></div>
+    <div class="stat-pill"><div class="sp-num" id="resTrio56">0</div><div class="sp-label">Trio 5/6 STB</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Historial de Quincenas</div>
+    <div id="historialLista"><div style="text-align:center;padding:16px;color:var(--muted);font-size:13px;">Sin historial aún</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📊 Envío a Google Sheets</div>
+    <div style="background:#f0fff4;border:2px solid #b2f2d0;border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:800;color:#1e7e34;margin-bottom:8px;">🔗 URL de Apps Script</div>
+      <input type="text" id="appsScriptUrl" placeholder="URL oficial Dialpa..." style="width:100%;padding:10px 12px;border:2px solid #b2f2d0;border-radius:10px;font-size:11px;outline:none;font-family:'Nunito',sans-serif;" oninput="guardarUrl()">
+      <div id="urlStatus" style="font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;margin-top:8px;background:#e6fdf8;color:#007a60;">✅ URL oficial Dialpa configurada</div>
+    </div>
+    <div id="btnSheetsContainer"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 Reporte para WhatsApp</div>
+    <button class="btn btn-success" id="btnCopiar" onclick="copiarReporte()">📋 Generar y Copiar Reporte</button>
+    <div id="reporteBox" style="display:none">
+      <div class="reporte-box" id="textoReporte"></div>
+      <button class="btn btn-gray" style="margin-top:8px" onclick="copiarReporte()">🔁 Copiar de nuevo</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+    <button class="btn btn-danger" onclick="limpiarQuincena()">🗑️ Limpiar Órdenes de Esta Quincena</button>
+    <button class="btn btn-danger" style="opacity:0.8" onclick="borrarTodo()">⚠️ Borrar Todas las Órdenes</button>
+    <button class="btn btn-gray" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+  </div>
+</div>
+
+<div class="nav" id="navBar">
+  <div class="nav-item active" id="navReg" onclick="goto('screenForm','navReg')"><span class="ni">📝</span>Registro<div class="nav-dot"></div></div>
+  <div class="nav-item" id="navSal" onclick="goto('screenSalary','navSal')"><span class="ni">💵</span>Mi Quincena<div class="nav-dot"></div></div>
+</div>
+</div>
+<script>
+const APPS_URL="https://script.google.com/macros/s/AKfycbx75-sopTLz-8IHc4eim_O0E5ox3PjpRYCeBhSDUS2DfgwOCWYoTtVaMF2xO1CHkphonA/exec";
+const TECNICOS={"80493258":"Yoban","80842485":"Román Suta Castro","1006094077":"Alexander Caballero","1001276680":"Andrés Sebastián Vélez"};
+const ACTIVIDADES=[
+{id:"1",code:"350001049885",cat:"single-duo",tablerCat:"DUOS PELADOS",nombre:"HC SINGLE o DUO con ONT",p12:37000,p3:43000,p4:47000},
+{id:"2",code:"350001049886",cat:"single-duo",tablerCat:"DUOS 1 AP",nombre:"HC SINGLE o DUO con ONT con 1 AP",p12:45000,p3:50000,p4:55000},
+{id:"3",code:"350001049887",cat:"single-duo",tablerCat:"DUOS 1 AP",nombre:"HC SINGLE o DUO con ONT con 1 AP con 1 PUNTO DE RED",p12:47000,p3:53000,p4:57000},
+{id:"4",code:"350001049888",cat:"single-duo",tablerCat:"DUOS 1 AP",nombre:"HC SINGLE o DUO con ONT con 1 AP con 2 PUNTOS DE RED",p12:48000,p3:55000,p4:60000},
+{id:"5",code:"350001049889",cat:"single-duo",tablerCat:"DUOS PELADOS",nombre:"HC SINGLE o DUO con ONT con 1 PUNTO DE RED",p12:37000,p3:43000,p4:47000},
+{id:"6",code:"350001049890",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 2 AP",p12:50000,p3:56000,p4:61000},
+{id:"7",code:"350001049891",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 2 AP con 1 PUNTO DE RED",p12:52000,p3:58000,p4:63000},
+{id:"8",code:"350001049892",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 2 AP con 2 PUNTOS DE RED",p12:60000,p3:66000,p4:70000},
+{id:"9",code:"350001049893",cat:"single-duo",tablerCat:"DUOS PELADOS",nombre:"HC SINGLE o DUO con ONT con 2 PUNTOS DE RED",p12:48000,p3:55000,p4:60000},
+{id:"10",code:"350001049894",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 3 AP",p12:54000,p3:60000,p4:65000},
+{id:"11",code:"350001049895",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 3 AP con 1 PUNTO DE RED",p12:56000,p3:62000,p4:68000},
+{id:"12",code:"350001049896",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 3 AP con 2 PUNTOS DE RED",p12:64000,p3:72000,p4:75000},
+{id:"13",code:"350001049897",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 4 AP",p12:56000,p3:64000,p4:70000},
+{id:"14",code:"350001049898",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 4 AP con 1 PUNTO DE RED",p12:58000,p3:65000,p4:72000},
+{id:"15",code:"350001049899",cat:"single-duo",tablerCat:"DUOS 2 AP o MAS",nombre:"HC SINGLE o DUO con ONT con 4 AP con 2 PUNTOS DE RED",p12:66000,p3:75000,p4:78000},
+{id:"46",code:"350001056826",cat:"single-duo",tablerCat:"SOCIAL INTERNET",nombre:"HC SINGLE o DUO con ONT - Social Internet",p12:35000,p3:41000,p4:45000},
+{id:"16",code:"350001049900",cat:"trio-1-2",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT",p12:48000,p3:55000,p4:63000},
+{id:"17",code:"350001049901",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 1 AP",p12:52000,p3:60000,p4:68000},
+{id:"18",code:"350001049902",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 1 AP con 1 PUNTO DE RED",p12:58000,p3:67000,p4:75000},
+{id:"19",code:"350001049903",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 1 AP con 2 PUNTOS DE RED",p12:64000,p3:75000,p4:80000},
+{id:"20",code:"350001049904",cat:"trio-1-2",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 1 PUNTO DE RED",p12:48000,p3:55000,p4:63000},
+{id:"21",code:"350001049905",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 2 AP",p12:68000,p3:77000,p4:85000},
+{id:"22",code:"350001049906",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 2 AP con 1 PUNTO DE RED",p12:68000,p3:77000,p4:85000},
+{id:"23",code:"350001049907",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 2 AP con 2 PUNTOS DE RED",p12:74000,p3:80000,p4:90000},
+{id:"24",code:"350001049908",cat:"trio-1-2",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 2 PUNTOS DE RED",p12:60000,p3:69000,p4:77000},
+{id:"25",code:"350001049909",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 3 AP",p12:68000,p3:75000,p4:84000},
+{id:"26",code:"350001049910",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 3 AP con 1 PUNTO DE RED",p12:70000,p3:77000,p4:86000},
+{id:"27",code:"350001049911",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 3 AP con 2 PUNTOS DE RED",p12:80000,p3:85000,p4:95000},
+{id:"28",code:"350001049912",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 4 AP",p12:70000,p3:77000,p4:85000},
+{id:"29",code:"350001049913",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 4 AP con 1 PUNTO DE RED",p12:72000,p3:80000,p4:88000},
+{id:"30",code:"350001049914",cat:"trio-1-2",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (1/2 STB) o DUO TV (1/2 STB) con ONT con 4 AP con 2 PUNTOS DE RED",p12:82000,p3:86000,p4:90000},
+{id:"31",code:"350001049915",cat:"trio-3-4",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT",p12:68000,p3:76000,p4:86000},
+{id:"32",code:"350001049916",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 1 AP",p12:77000,p3:88000,p4:100000},
+{id:"33",code:"350001049917",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 1 AP con 1 PUNTO DE RED",p12:80000,p3:90000,p4:101000},
+{id:"34",code:"350001049918",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 1 AP con 2 PUNTOS DE RED",p12:81000,p3:91000,p4:102000},
+{id:"35",code:"350001049919",cat:"trio-3-4",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 1 PUNTO DE RED",p12:71000,p3:80000,p4:90000},
+{id:"36",code:"350001049920",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 2 AP",p12:87000,p3:100000,p4:110000},
+{id:"37",code:"350001049921",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 2 AP con 1 PUNTO DE RED",p12:87000,p3:100000,p4:111000},
+{id:"38",code:"350001049922",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 2 AP con 2 PUNTOS DE RED",p12:89000,p3:102000,p4:113000},
+{id:"39",code:"350001049923",cat:"trio-3-4",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 2 PUNTOS DE RED",p12:69000,p3:80000,p4:88000},
+{id:"40",code:"350001049924",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 3 AP",p12:88000,p3:100000,p4:111000},
+{id:"41",code:"350001049925",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 3 AP con 1 PUNTO DE RED",p12:90000,p3:102000,p4:112000},
+{id:"42",code:"350001049926",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 3 AP con 2 PUNTOS DE RED",p12:90000,p3:104000,p4:114000},
+{id:"43",code:"350001049927",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 4 AP",p12:88000,p3:101000,p4:112000},
+{id:"44",code:"350001049928",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 4 AP con 1 PUNTO DE RED",p12:90000,p3:104000,p4:114000},
+{id:"45",code:"350001049929",cat:"trio-3-4",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (3/4 STB) o DUO TV (3/4 STB) con ONT con 4 AP con 2 PUNTOS DE RED",p12:90000,p3:104000,p4:114000},
+{id:"47",code:"350001049930",cat:"trio-5-6",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT",p12:100000,p3:110000,p4:120000},
+{id:"48",code:"350001049931",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 1 AP",p12:110000,p3:122000,p4:135000},
+{id:"49",code:"350001049932",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 1 AP con 1 PUNTO DE RED",p12:112000,p3:130000,p4:140000},
+{id:"50",code:"350001049933",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 1 AP con 2 PUNTOS DE RED",p12:114000,p3:133000,p4:145000},
+{id:"51",code:"350001049934",cat:"trio-5-6",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 1 PUNTO DE RED",p12:105000,p3:122000,p4:130000},
+{id:"52",code:"350001049935",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 2 AP",p12:112000,p3:130000,p4:145000},
+{id:"53",code:"350001049936",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 2 AP con 1 PUNTO DE RED",p12:116000,p3:133000,p4:147000},
+{id:"54",code:"350001049937",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 2 AP con 2 PUNTOS DE RED",p12:118000,p3:135000,p4:150000},
+{id:"55",code:"350001049938",cat:"trio-5-6",tablerCat:"TRIOS PELADOS",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 2 PUNTOS DE RED",p12:105000,p3:122000,p4:130000},
+{id:"56",code:"350001049939",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 3 AP",p12:115000,p3:134000,p4:148000},
+{id:"57",code:"350001049940",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 3 AP con 1 PUNTO DE RED",p12:122000,p3:140000,p4:154000},
+{id:"58",code:"350001049941",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 3 AP con 2 PUNTOS DE RED",p12:124000,p3:143000,p4:158000},
+{id:"59",code:"350001049942",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 4 AP",p12:119000,p3:138000,p4:150000},
+{id:"60",code:"350001049943",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 4 AP con 1 PUNTO DE RED",p12:122000,p3:143000,p4:154000},
+{id:"61",code:"350001049944",cat:"trio-5-6",tablerCat:"TRIOS CON AP",nombre:"HC TRIO (5/6 STB) o DUO TV (5/6 STB) con ONT con 4 AP con 2 PUNTOS DE RED",p12:124000,p3:143000,p4:158000}
+];
+
+let usuarioCC=null,usuarioNombre=null,catActual="single-duo",actSelId=null,fechaRegistro=null,fechaSelCal=null,_registrando=false;
+
+// STORAGE
+function getOrdenes(){try{return JSON.parse(localStorage.getItem("ord_"+usuarioCC)||"[]");}catch(e){return[];}}
+function setOrdenes(o){try{localStorage.setItem("ord_"+usuarioCC,JSON.stringify(o));}catch(e){}}
+function getAcumulado(){try{return Number(localStorage.getItem("acum_"+usuarioCC)||0);}catch(e){return 0;}}
+function setAcumulado(v){try{localStorage.setItem("acum_"+usuarioCC,String(v));}catch(e){}}
+function getHistorial(){try{return JSON.parse(localStorage.getItem("hist_"+usuarioCC)||"[]");}catch(e){return[];}}
+function setHistorial(h){try{localStorage.setItem("hist_"+usuarioCC,JSON.stringify(h));}catch(e){}}
+function getAppsUrl(){try{const s=localStorage.getItem("appsScriptUrl")||"";return s.startsWith("https://script.google.com")?s:APPS_URL;}catch(e){return APPS_URL;}}
+function guardarUrl(){
+  const url=document.getElementById("appsScriptUrl").value.trim();
+  try{localStorage.setItem("appsScriptUrl",url);}catch(e){}
+  document.getElementById("urlStatus").textContent=url.startsWith("https://script.google.com")?"✅ URL personalizada configurada":"✅ URL oficial Dialpa configurada";
+}
+
+// FECHA
+function pad(n){return String(n).padStart(2,"0");}
+function hoyStr(){const n=new Date();return pad(n.getDate())+"/"+pad(n.getMonth()+1)+"/"+n.getFullYear();}
+function ayerStr(){const n=new Date();n.setDate(n.getDate()-1);return pad(n.getDate())+"/"+pad(n.getMonth()+1)+"/"+n.getFullYear();}
+
+// OFFLINE
+function checkOnline(){document.getElementById("offlineBanner").classList.toggle("show",!navigator.onLine);}
+window.addEventListener("online",checkOnline);
+window.addEventListener("offline",checkOnline);
+
+// LOGIN
+function handleLogin(){
+  const cc=document.getElementById("loginCC").value.trim();
+  if(TECNICOS[cc]){
+    usuarioCC=cc;usuarioNombre=TECNICOS[cc];fechaRegistro=null;
+    // Migrar datos viejos
+    try{const v=localStorage.getItem("ordenes_"+cc);if(v&&!localStorage.getItem("ord_"+cc))localStorage.setItem("ord_"+cc,v);if(v)localStorage.removeItem("ordenes_"+cc);}catch(e){}
+    document.getElementById("headerUser").style.display="flex";
+    document.getElementById("headerName").textContent=usuarioNombre.split(" ")[0];
+    document.getElementById("loginError").style.display="none";
+    document.getElementById("navBar").style.display="flex";
+    document.getElementById("fechaRegistroLabel").textContent="📅 Hoy — "+hoyStr();
+    checkOnline();
+    goto("screenForm","navReg");
+    renderActs();renderTabla();renderDiasTrabajados();
+    setTimeout(verificarDiaAnterior,800);
+  }else{
+    document.getElementById("loginError").style.display="block";
+  }
+}
+
+// DÍA ANTERIOR
+function verificarDiaAnterior(){
+  const ayer=ayerStr();
+  if(localStorage.getItem("contesto_"+usuarioCC+"_"+ayer)) return;
+  if(!getOrdenes().some(o=>o.fecha===ayer)){
+    document.getElementById("modalDiaDesc").textContent="No registraste actividades el "+ayer+". ¿Realizaste instalaciones ese día?";
+    document.getElementById("modalDiaAnterior").classList.add("show");
+  }
+}
+function responderDiaAnterior(trabajo){
+  const ayer=ayerStr();
+  localStorage.setItem("contesto_"+usuarioCC+"_"+ayer,"1");
+  document.getElementById("modalDiaAnterior").classList.remove("show");
+  if(trabajo){fechaRegistro=ayer;document.getElementById("fechaRegistroLabel").textContent="📅 Ayer — "+ayer;renderActs();}
+}
+
+// CALENDARIO
+function abrirCalendario(){
+  fechaSelCal=null;
+  document.getElementById("btnConfirmarFecha").disabled=true;
+  const now=new Date();
+  const a=now.getFullYear(),m=now.getMonth();
+  const primerDia=new Date(a,m,1).getDay();
+  const diasMes=new Date(a,m+1,0).getDate();
+  const conTrabajo=new Set(getOrdenes().map(o=>o.fecha));
+  let html="";
+  for(let i=0;i<primerDia;i++) html+='<div class="cal-day disabled"></div>';
+  for(let d=1;d<=diasMes;d++){
+    const ds=pad(d)+"/"+pad(m+1)+"/"+a;
+    const esHoy=d===now.getDate(),futuro=d>now.getDate();
+    let cls="cal-day"+(futuro?" disabled":esHoy?" today":conTrabajo.has(ds)?" has-work":"");
+    html+=`<div class="${cls}" ${futuro?"":` onclick="selDia('${ds}',this)"`}>${d}</div>`;
+  }
+  document.getElementById("calGrid").innerHTML=html;
+  document.getElementById("modalCalendario").classList.add("show");
+}
+function selDia(fecha,el){
+  document.querySelectorAll(".cal-day").forEach(d=>d.classList.remove("selected"));
+  el.classList.add("selected");fechaSelCal=fecha;
+  document.getElementById("btnConfirmarFecha").disabled=false;
+}
+function confirmarFecha(){
+  if(!fechaSelCal) return;
+  fechaRegistro=fechaSelCal===hoyStr()?null:fechaSelCal;
+  document.getElementById("fechaRegistroLabel").textContent="📅 "+(fechaRegistro||hoyStr());
+  document.getElementById("modalCalendario").classList.remove("show");
+  renderActs();
+}
+
+// NAVEGACIÓN
+function goto(screen,nav){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById(screen).classList.add("active");
+  if(nav) document.getElementById(nav).classList.add("active");
+  if(screen==="screenSalary"){calcSalary();renderBtnSheets();renderHistorial();}
+  if(screen==="screenForm") renderDiasTrabajados();
+}
+
+// CATEGORÍAS
+function selCat(cat){
+  catActual=cat;actSelId=null;
+  document.querySelectorAll(".cat-btn").forEach(b=>b.classList.toggle("active",b.dataset.cat===cat));
+  document.getElementById("buscarAct").value="";
+  document.getElementById("priceInfo").classList.remove("show");
+  renderActs();
+}
+function filtrarActs(){renderActs(document.getElementById("buscarAct").value.toLowerCase());}
+
+// PRECIO ESTIMADO (muestra precio según lo que llevas ESE DÍA)
+function getPrecioEstimado(act,fecha){
+  const count=getOrdenes().filter(o=>o.cat===act.cat&&o.fecha===fecha).length+1;
+  if(count>=4) return{precio:act.p4,tramo:"4+ órdenes"};
+  if(count===3) return{precio:act.p3,tramo:"3ra orden"};
+  return{precio:act.p12,tramo:"1ra o 2da orden"};
+}
+
+// RENDER ACTIVIDADES
+function renderActs(q=""){
+  if(!usuarioCC) return;
+  const lista=document.getElementById("listaActs");
+  const fecha=fechaRegistro||hoyStr();
+  const filtered=ACTIVIDADES.filter(a=>a.cat===catActual&&a.nombre.toLowerCase().includes(q));
+  if(!filtered.length){lista.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">Sin resultados</div>';return;}
+  lista.innerHTML=filtered.map(a=>{
+    const{precio}=getPrecioEstimado(a,fecha);
+    return`<div class="act-item ${actSelId===a.id?'sel':''}" onclick="selAct('${a.id}')">
+      <input type="radio" name="act" ${actSelId===a.id?'checked':''} readonly>
+      <span style="flex:1;font-size:12px">${a.nombre}</span>
+      <div class="act-prices">
+        <div class="p-main">$${precio.toLocaleString('es-CO')}</div>
+        <div class="p-hint">$${a.p12.toLocaleString('es-CO')}/$${a.p3.toLocaleString('es-CO')}/$${a.p4.toLocaleString('es-CO')}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function selAct(id){
+  actSelId=id;
+  const act=ACTIVIDADES.find(a=>a.id===id);
+  const fecha=fechaRegistro||hoyStr();
+  const{precio,tramo}=getPrecioEstimado(act,fecha);
+  const ya=getOrdenes().filter(o=>o.cat===act.cat&&o.fecha===fecha).length;
+  const pi=document.getElementById("priceInfo");
+  pi.classList.add("show");
+  pi.innerHTML=`💡 Precio estimado: <b>$${precio.toLocaleString('es-CO')}</b> (${tramo})<br>
+  <span style="font-size:11px">${ya} del mismo tipo el ${fecha} &nbsp;|&nbsp; 1–2: $${act.p12.toLocaleString('es-CO')} / 3: $${act.p3.toLocaleString('es-CO')} / 4+: $${act.p4.toLocaleString('es-CO')}</span>`;
+  renderActs(document.getElementById("buscarAct").value.toLowerCase());
+}
+
+// GUARDAR ORDEN — anti-doble-clic, precios correctos
+function guardarOrden(){
+  if(_registrando) return;
+  const mdm=document.getElementById("mdmInput").value.trim();
+  ["errorMDM","successMsg","sheetsMsg","sheetsErrMsg"].forEach(id=>document.getElementById(id).style.display="none");
+  if(!mdm){alert("Ingresa el código MDM Fibra");return;}
+  if(!actSelId){alert("Selecciona una actividad");return;}
+  const ordenes=getOrdenes();
+  if(ordenes.find(o=>o.mdm===mdm)){document.getElementById("errorMDM").style.display="block";return;}
+  _registrando=true;
+  const btnReg=document.getElementById("btnRegistrar");
+  btnReg.disabled=true;btnReg.textContent="⏳ Registrando...";
+  const act=ACTIVIDADES.find(a=>a.id===actSelId);
+  const fecha=fechaRegistro||hoyStr();
+  const now=new Date();
+  // Precio según cuántas del mismo tipo hay ESE DÍA (para el registro)
+  const mismoDia=ordenes.filter(o=>o.cat===act.cat&&o.fecha===fecha).length+1;
+  let precio,tramo;
+  if(mismoDia>=4){precio=act.p4;tramo="4+ órdenes";}
+  else if(mismoDia===3){precio=act.p3;tramo="3ra orden";}
+  else{precio=act.p12;tramo="1ra o 2da orden";}
+  // Quincena según DÍA de la fecha registrada
+  const q=parseInt(fecha.split("/")[0])<=15?"1":"2";
+  const orden={mdm,actId:actSelId,code:act.code,actNombre:act.nombre,cat:act.cat,tablerCat:act.tablerCat,precio,tramo,quincena:q,fecha,hora:now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),tecnico:usuarioNombre,cc:usuarioCC};
+  ordenes.push(orden);
+  setOrdenes(ordenes);
+  enviarASheets(orden).then(ok=>{
+    document.getElementById(ok?"sheetsMsg":"sheetsErrMsg").style.display="block";
+    setTimeout(()=>document.getElementById(ok?"sheetsMsg":"sheetsErrMsg").style.display="none",ok?3000:4000);
+  }).finally(()=>{_registrando=false;btnReg.disabled=false;btnReg.textContent="➕ Registrar Instalación";});
+  document.getElementById("mdmInput").value="";
+  actSelId=null;
+  document.getElementById("priceInfo").classList.remove("show");
+  renderActs();renderTabla();renderDiasTrabajados();
+  document.getElementById("successMsg").style.display="block";
+  setTimeout(()=>document.getElementById("successMsg").style.display="none",2500);
+}
+
+// TABLA
+function renderTabla(){
+  const ordenes=getOrdenes();
+  const tbody=document.getElementById("tablaOrdenes");
+  const empty=document.getElementById("emptyOrders");
+  if(!ordenes.length){tbody.innerHTML="";empty.style.display="block";return;}
+  empty.style.display="none";
+  tbody.innerHTML=ordenes.slice().reverse().map(o=>`
+    <tr>
+      <td><span class="badge badge-gray" style="font-size:9px">${o.fecha}</span></td>
+      <td><b style="font-size:11px">${o.mdm}</b></td>
+      <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px">${o.actNombre}</td>
+      <td><span class="badge badge-green">$${Math.round(o.precio/1000)}K</span></td>
+    </tr>`).join("");
+}
+
+// DÍAS TRABAJADOS
+function renderDiasTrabajados(){
+  const now=new Date();
+  const mes=now.getMonth(),año=now.getFullYear();
+  const dias=new Set(getOrdenes().filter(o=>{const p=o.fecha.split("/");return parseInt(p[1])-1===mes&&parseInt(p[2])===año;}).map(o=>o.fecha));
+  document.getElementById("diasTrabajados").textContent=dias.size;
+  document.getElementById("diasPeriodo").textContent="en "+now.toLocaleDateString('es-CO',{month:'long'});
+  const diasMes=new Date(año,mes+1,0).getDate();
+  let dots="";
+  for(let d=1;d<=Math.min(diasMes,30);d++){
+    dots+=`<div class="dia-dot ${dias.has(pad(d)+"/"+pad(mes+1)+"/"+año)?'trabajado':''}"></div>`;
+  }
+  document.getElementById("diasDots").innerHTML=dots;
+}
+
+// RECALCULAR PRECIOS (para liquidación final — usa total por quincena)
+function recalcularPrecios(quincena){
+  const ordenes=getOrdenes();
+  const porCat={};
+  ordenes.filter(o=>o.quincena===quincena).forEach(o=>{porCat[o.cat]=(porCat[o.cat]||0)+1;});
+  return ordenes.map(o=>{
+    if(o.quincena!==quincena) return o;
+    const act=ACTIVIDADES.find(a=>a.id===o.actId);
+    if(!act) return o;
+    const total=porCat[o.cat]||1;
+    let precio,tramo;
+    if(total>=4){precio=act.p4;tramo="4+ órdenes";}
+    else if(total===3){precio=act.p3;tramo="3ra orden";}
+    else{precio=act.p12;tramo="1ra o 2da orden";}
+    return{...o,precio,tramo};
+  });
+}
+
+// CALCULAR QUINCENA
+function calcSalary(){
+  const q=document.getElementById("selectCorte").value;
+  const ordenes=recalcularPrecios(q).filter(o=>o.quincena===q);
+  const bruto=ordenes.reduce((s,o)=>s+o.precio,0);
+  const ret=Math.round(bruto*0.05);
+  const neto=bruto-ret;
+  const fmt=v=>"$"+v.toLocaleString('es-CO')+" COP";
+  const diasQ=new Set(ordenes.map(o=>o.fecha)).size;
+  document.getElementById("lblCantidad").textContent=ordenes.length+" órdenes";
+  document.getElementById("lblDiasQ").textContent=diasQ+" días";
+  document.getElementById("lblBruto").textContent=fmt(bruto);
+  document.getElementById("lblRetencion").textContent="-"+fmt(ret);
+  document.getElementById("lblNeto").textContent=fmt(neto);
+  document.getElementById("lblNeto2").textContent=fmt(neto);
+  document.getElementById("lblPeriodoDesc").textContent=q==="1"?"1ra Quincena (días 1–15)":"2da Quincena (días 16–31)";
+  document.getElementById("lblAcumulado").textContent=fmt(getAcumulado());
+  const h=getHistorial();
+  document.getElementById("lblAcumuladoSub").textContent="Suma de "+h.length+" quincena(s) enviada(s)";
+  const todas=getOrdenes();
+  document.getElementById("resSingle").textContent=todas.filter(o=>o.cat==="single-duo").length;
+  document.getElementById("resTrio12").textContent=todas.filter(o=>o.cat==="trio-1-2").length;
+  document.getElementById("resTrio34").textContent=todas.filter(o=>o.cat==="trio-3-4").length;
+  document.getElementById("resTrio56").textContent=todas.filter(o=>o.cat==="trio-5-6").length;
+}
+
+// HISTORIAL
+function renderHistorial(){
+  const hist=getHistorial();
+  const cont=document.getElementById("historialLista");
+  if(!hist.length){cont.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px;">Sin historial aún</div>';return;}
+  cont.innerHTML=hist.slice().reverse().map(h=>`
+    <div class="historial-item">
+      <div><div class="hist-label">${h.quincena}</div><div class="hist-sub">${h.fecha} — ${h.ordenes} órdenes</div></div>
+      <div class="hist-val">$${h.neto.toLocaleString('es-CO')}</div>
+    </div>`).join("");
+}
+
+// BOTÓN ENVIAR — solo días 1 y 16, una sola vez
+function renderBtnSheets(){
+  const now=new Date();
+  const dia=now.getDate(),mes=now.getMonth(),año=now.getFullYear();
+  const q=document.getElementById("selectCorte").value;
+  const clave="env_"+usuarioCC+"_q"+q+"_"+año+"_"+mes;
+  const yaEnvio=localStorage.getItem(clave)==="1";
+  const esHabil=dia===1||dia===16;
+  const cont=document.getElementById("btnSheetsContainer");
+  if(!cont) return;
+  if(yaEnvio){
+    cont.innerHTML=`<button class="btn btn-locked" disabled>🔒 Ya enviaste esta quincena — próximo: día ${q==="1"?"16":"1"}</button>`;
+  } else if(!esHabil){
+    cont.innerHTML=`<button class="btn btn-locked" disabled>🔒 Disponible el día ${dia<16?"16":"1"} del mes</button>`;
+  } else {
+    cont.innerHTML=`<button class="btn btn-sheets" id="btnSheets" onclick="enviarQuincenaSheets()">📤 Enviar Reporte de Quincena a Sheets</button>`;
+  }
+}
+
+// ENVÍO A SHEETS
+async function enviarASheets(orden){
+  if(!navigator.onLine) return false;
+  try{
+    const p=new URLSearchParams({accion:"registrar",fecha:orden.fecha,hora:orden.hora,cedula:orden.cc,tecnico:orden.tecnico,mdm:orden.mdm,code:orden.code,actNombre:orden.actNombre,tablerCat:orden.tablerCat,valor:orden.precio,tramo:orden.tramo,quincena:orden.quincena==="1"?"1ra Quincena":"2da Quincena"});
+    await fetch(getAppsUrl()+"?"+p.toString(),{method:"GET",mode:"no-cors"});
+    return true;
+  }catch(e){return false;}
+}
+
+async function enviarQuincenaSheets(){
+  if(!navigator.onLine){alert("⚠️ Sin conexión. Conéctate e intenta de nuevo.");return;}
+  const q=document.getElementById("selectCorte").value;
+  const ordenes=recalcularPrecios(q).filter(o=>o.quincena===q);
+  if(!ordenes.length){alert("No hay órdenes en este periodo");return;}
+  const bruto=ordenes.reduce((s,o)=>s+o.precio,0);
+  const ret=Math.round(bruto*0.05);
+  const neto=bruto-ret;
+  const now=new Date();
+  const clave="env_"+usuarioCC+"_q"+q+"_"+now.getFullYear()+"_"+now.getMonth();
+  const btn=document.getElementById("btnSheets");
+  if(btn){btn.disabled=true;btn.textContent="⏳ Enviando...";}
+  try{
+    const p=new URLSearchParams({accion:"quincena",tecnico:usuarioNombre,cedula:usuarioCC,quincena:q==="1"?"1ra Quincena":"2da Quincena",bruto,retencion:ret,neto,single_duo:ordenes.filter(o=>o.cat==="single-duo").length,trio_1_2:ordenes.filter(o=>o.cat==="trio-1-2").length,trio_3_4:ordenes.filter(o=>o.cat==="trio-3-4").length,trio_5_6:ordenes.filter(o=>o.cat==="trio-5-6").length});
+    await fetch(getAppsUrl()+"?"+p.toString(),{method:"GET",mode:"no-cors"});
+    localStorage.setItem(clave,"1");
+    const nuevoAcum=getAcumulado()+neto;
+    setAcumulado(nuevoAcum);
+    // Guardar en historial
+    const hist=getHistorial();
+    hist.push({fecha:now.toLocaleDateString('es-CO'),quincena:(q==="1"?"1ra Quincena":"2da Quincena")+" — "+now.toLocaleDateString('es-CO',{month:'long',year:'numeric'}),ordenes:ordenes.length,bruto,retencion:ret,neto});
+    setHistorial(hist);
+    // Borrar órdenes de esta quincena
+    setOrdenes(getOrdenes().filter(o=>o.quincena!==q));
+    renderTabla();calcSalary();renderBtnSheets();renderHistorial();renderDiasTrabajados();
+    alert("✅ ¡Reporte enviado!\n\n💰 Neto cobrado: $"+neto.toLocaleString('es-CO')+" COP\n📊 Acumulado total: $"+nuevoAcum.toLocaleString('es-CO')+" COP\n\nLas órdenes fueron archivadas.");
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent="📤 Enviar Reporte de Quincena a Sheets";}
+    alert("❌ Error de conexión. Intenta de nuevo.");
+  }
+}
+
+// REPORTE WHATSAPP
+function copiarReporte(){
+  const q=document.getElementById("selectCorte").value;
+  const ordenes=recalcularPrecios(q).filter(o=>o.quincena===q);
+  const bruto=ordenes.reduce((s,o)=>s+o.precio,0);
+  const ret=Math.round(bruto*0.05);
+  const neto=bruto-ret;
+  const todas=getOrdenes();
+  const now=new Date();
+  const qLabel=q==="1"?"1ra Quincena (1 al 15)":"2da Quincena (16 al 31)";
+  const mes=now.toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+  const fmt=v=>"$"+v.toLocaleString('es-CO');
+  const diasQ=new Set(ordenes.map(o=>o.fecha)).size;
+  const grupos=[{label:"📶 SINGLE / DUO",items:ordenes.filter(o=>o.cat==="single-duo")},{label:"📺 TRIO 1/2 STB",items:ordenes.filter(o=>o.cat==="trio-1-2")},{label:"🖥️ TRIO 3/4 STB",items:ordenes.filter(o=>o.cat==="trio-3-4")},{label:"📡 TRIO 5/6 STB",items:ordenes.filter(o=>o.cat==="trio-5-6")}];
+  let txt="╔══════════════════════════════╗\n║   DIALPA FIBRA — LIQUIDACIÓN  ║\n╚══════════════════════════════╝\n\n";
+  txt+=`📅 Fecha:           ${now.toLocaleDateString('es-CO')}\n👷 Técnico:         ${usuarioNombre}\n🗓️  Periodo:         ${qLabel}\n📆 Mes:             ${mes}\n📊 Días trabajados: ${diasQ}\n\n`;
+  grupos.forEach(b=>{
+    if(!b.items.length) return;
+    txt+=`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${b.label} (${b.items.length})\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    b.items.forEach((o,i)=>{txt+=`${String(i+1).padStart(2,'0')}. [${o.code}] MDM: ${o.mdm}\n    ${o.actNombre}\n    💰 ${fmt(o.precio)} COP [${o.tramo}]\n    📅 ${o.fecha}\n\n`;});
+  });
+  txt+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💵 LIQUIDACIÓN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+  txt+=`Valor Bruto:           ${fmt(bruto)} COP\nRetención Garantía 5%: -${fmt(ret)} COP\n──────────────────────────────\n✅ TOTAL A COBRAR:     ${fmt(neto)} COP\n💰 ACUMULADO TOTAL:    ${fmt(getAcumulado())} COP\n\n`;
+  txt+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📊 RESUMEN DEL MES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+  txt+=`📶 Single/Duo:   ${todas.filter(o=>o.cat==="single-duo").length}\n📺 Trio 1/2 STB: ${todas.filter(o=>o.cat==="trio-1-2").length}\n🖥️ Trio 3/4 STB: ${todas.filter(o=>o.cat==="trio-3-4").length}\n📡 Trio 5/6 STB: ${todas.filter(o=>o.cat==="trio-5-6").length}\n🏆 TOTAL MES:    ${todas.length}\n\nSistema Dialpa Fibra v3.0`;
+  document.getElementById("textoReporte").textContent=txt;
+  document.getElementById("reporteBox").style.display="block";
+  const btn=document.getElementById("btnCopiar");
+  navigator.clipboard.writeText(txt).then(()=>{btn.textContent="✅ ¡Copiado para WhatsApp!";setTimeout(()=>btn.textContent="📋 Generar y Copiar Reporte",3000);}).catch(()=>{btn.textContent="⚠️ Copia manualmente";});
+}
+
+// LIMPIAR — NUNCA toca el acumulado ni el historial
+function limpiarQuincena(){
+  const q=document.getElementById("selectCorte").value;
+  if(!confirm("¿Borrar órdenes de la "+(q==="1"?"1ra":"2da")+" Quincena?\n\n✅ Acumulado e historial NO se borran.")) return;
+  setOrdenes(getOrdenes().filter(o=>o.quincena!==q));
+  renderTabla();calcSalary();renderDiasTrabajados();
+  alert("✅ Órdenes borradas. Acumulado e historial intactos.");
+}
+function borrarTodo(){
+  if(!confirm("⚠️ ¿Borrar TODAS las órdenes?\n\n✅ Acumulado e historial NO se borran.")) return;
+  try{localStorage.removeItem("ord_"+usuarioCC);}catch(e){}
+  renderTabla();calcSalary();renderDiasTrabajados();
+  alert("✅ Órdenes borradas. Acumulado e historial intactos.");
+}
+function cerrarSesion(){
+  if(!confirm("¿Cerrar sesión? Los datos quedan guardados.")) return;
+  usuarioCC=null;usuarioNombre=null;actSelId=null;fechaRegistro=null;_registrando=false;
+  document.getElementById("loginCC").value="";
+  document.getElementById("headerUser").style.display="none";
+  document.getElementById("navBar").style.display="none";
+  document.getElementById("offlineBanner").classList.remove("show");
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screenLogin").classList.add("active");
+}
+
+checkOnline();
+renderActs();
+</script>
+</body>
+</html>
